@@ -1,7 +1,11 @@
 package com.example.restservice;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -16,5 +20,12 @@ public class EmployeeController {
     @GetMapping(value = "/employees", produces = MediaType.APPLICATION_JSON_VALUE)
     public Employees getEmployees() {
         return employeeManager.getAllEmployees();
+    }
+
+    @PostMapping(value = "/employees", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Employee> addEmployee(@RequestBody Employee employee) {
+        employeeManager.addEmployee(employee);
+        return ResponseEntity.status(HttpStatus.CREATED).body(employee);
     }
 }

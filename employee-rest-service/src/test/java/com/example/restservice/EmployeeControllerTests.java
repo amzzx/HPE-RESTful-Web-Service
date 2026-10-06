@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.json.JsonCompareMode;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -15,11 +16,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class EmployeeControllerTests {
 
-    private static final String EXPECTED_EMPLOYEES = """
-            {
-              "Employees": [
+    private static final String EXPECTED_EMPLOYEE_ENTRIES = """
                 {
                   "employee_id": "1",
                   "first_name": "Alex",
@@ -48,9 +48,23 @@ class EmployeeControllerTests {
                   "email": "sofia.chen@example.com",
                   "title": "Quality Assurance Engineer"
                 }
-              ]
+            """;
+
+    private static final String NEW_EMPLOYEE = """
+            {
+              "employee_id": "employee-005",
+              "first_name": "Taylor",
+              "last_name": "Wilson",
+              "email": "taylor.wilson@example.com",
+              "title": "Developer"
             }
             """;
+
+    private static final String EXPECTED_EMPLOYEES =
+            "{\"Employees\":[" + EXPECTED_EMPLOYEE_ENTRIES + "]}";
+
+    private static final String EXPECTED_EMPLOYEES_AFTER_POST =
+            "{\"Employees\":[" + EXPECTED_EMPLOYEE_ENTRIES + "," + NEW_EMPLOYEE + "]}";
 
     @Autowired
     private MockMvc mockMvc;
@@ -67,19 +81,35 @@ class EmployeeControllerTests {
     }
 
     @Test
-    void rejectsAddingEmployeesAndKeepsTheOriginalList() throws Exception {
+    void addsAnEmployeeAndIncludesItInSubsequentRequests() throws Exception {
         mockMvc.perform(post("/employees")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "employee_id": "5",
-                                  "first_name": "Taylor",
-                                  "last_name": "Wilson",
-                                  "email": "taylor.wilson@example.com",
-                                  "title": "Developer"
-                                }
-                                """))
-                .andExpect(status().isMethodNotAllowed());
+                        .content(NEW_EMPLOYEE))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(NEW_EMPLOYEE, JsonCompareMode.STRICT));
+
+        mockMvc.perform(get("/employees"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(EXPECTED_EMPLOYEES_AFTER_POST, JsonCompareMode.STRICT));
+    }
+
+    @Test
+    void rejectsMalformedJsonWithoutChangingTheList() throws Exception {
+        mockMvc.perform(post("/employees")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"employee_id\":"))
+                .andExpect(status().isBadRequest());
+
+        assertFullEmployeeList();
+    }
+
+    @Test
+    void rejectsAnEmptyBodyWithoutChangingTheList() throws Exception {
+        mockMvc.perform(post("/employees")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
 
         assertFullEmployeeList();
     }

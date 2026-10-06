@@ -21,4 +21,8 @@ public class EmployeeManager {
     public Employees getAllEmployees() {
         return employees;
     }
+
+    public void addEmployee(Employee employee) {
+        employees.getEmployeeList().add(employee);
+    }
 }

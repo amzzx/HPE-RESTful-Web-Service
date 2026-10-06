@@ -1,13 +1,13 @@
 package com.example.restservice;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Employees {
 
-    private List<Employee> employeeList = new ArrayList<>();
+    private List<Employee> employeeList = new CopyOnWriteArrayList<>();
 
     @JsonProperty("Employees")
     public List<Employee> getEmployeeList() {
@@ -15,6 +15,6 @@ public class Employees {
     }
 
     public void setEmployeeList(List<Employee> employeeList) {
-        this.employeeList = new ArrayList<>(employeeList);
+        this.employeeList = new CopyOnWriteArrayList<>(employeeList);
     }
 }

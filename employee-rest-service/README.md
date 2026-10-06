@@ -165,24 +165,66 @@ No database or external server setup is needed.
 
 ## Automated tests
 
+The project includes 12 tests in three classes under
+`src/test/java/com/example/restservice/`:
+
+| Test class | Type and count | Coverage |
+| --- | --- | --- |
+| `EmployeeManagerTests.java` | 4 JUnit unit tests | Checks the four initial employees and IDs, additions that preserve the original employees and all five supplied fields including a string ID, multiple additions followed by querying, and independent state for separate manager instances. |
+| `EmployeeControllerUnitTests.java` | 3 JUnit and Mockito unit tests | Checks that GET delegates to the manager and returns the complete or empty list, and POST delegates the addition and returns `201 Created` with the supplied employee. |
+| `EmployeeControllerTests.java` | 5 Spring Boot and MockMvc integration tests | Checks exact JSON output, repeated GET requests, POST followed by GET, and `400 Bad Request` for malformed JSON or an empty body without changing the employee list. |
+
+The unit tests exercise the manager and controller without starting a Spring
+application context. The integration tests use the Spring context and MockMvc to
+verify HTTP request handling and JSON conversion.
+
+Rebuild the executable and run all 12 tests:
+
 ```sh
-./mvnw test
+./mvnw clean package
 ```
 
-On Windows, use `.\mvnw.cmd test`.
+On Windows, use `.\mvnw.cmd clean package`.
 
-The five tests in `EmployeeControllerTests` check the exact initial JSON response,
-repeated GET requests, and that POST returns `201 Created`, preserves the supplied
-string employee ID, and includes the new employee in subsequent GET responses.
-They also verify that malformed JSON and an empty request body return `400 Bad
-Request` without changing the employee list.
+To run just the seven unit tests:
+
+```sh
+./mvnw -Dtest=EmployeeManagerTests,EmployeeControllerUnitTests test
+```
+
+On Windows:
+
+```powershell
+.\mvnw.cmd "-Dtest=EmployeeManagerTests,EmployeeControllerUnitTests" test
+```
+
+Use `./mvnw test` (or `.\mvnw.cmd test` on Windows) to rerun the complete test suite
+without packaging. Test reports are written to `target/surefire-reports/`.
+
+The project was rebuilt successfully using JDK 17. All 12 tests passed, with
+zero failures, errors, or skipped tests.
 
 ## Submission
 
-The supplied `employee-rest-service.zip` contains this runnable source project,
-including the five required Java files, this README, the build configuration,
-the Maven Wrapper, tests, and the example POST request JSON file. Extract it before
-building. Build output and local dependency caches are excluded from the ZIP.
+The submission for the testing task is `employee-rest-service-tests.zip`. It
+contains only these three Java test files, retaining their source paths:
+
+```text
+src/test/java/com/example/restservice/EmployeeManagerTests.java
+src/test/java/com/example/restservice/EmployeeControllerUnitTests.java
+src/test/java/com/example/restservice/EmployeeControllerTests.java
+```
+
+Extract this archive into your existing `employee-rest-service` project root so
+that its `src/test/` directory is combined with the project's `src/` directory.
+Then run `./mvnw test` or `.\mvnw.cmd test`. The test-only archive requires the
+existing application and Maven build files.
+
+The separate `employee-rest-service.zip` contains the full runnable source
+project, including the five application Java files, all three test files, this
+README, the build configuration, the Maven Wrapper, and the example POST request
+JSON file. Extract it before building. Build output and local dependency caches
+are excluded from both archives.
 
 ## Reference resources
 
@@ -194,5 +236,7 @@ The employee classes implement the requirements in the supplied screenshots.
 - [How to Create a REST API using Java Spring Boot](https://www.geeksforgeeks.org/java/how-to-create-a-rest-api-using-java-spring-boot/)
 - [Download and Upload Files with Spring Boot](https://devwithus.com/download-upload-files-with-spring-boot/)
 - [Creating a RESTful HTTP Server in Spring Boot (Java)](https://www.sohamkamani.com/java/spring-rest-http-server/)
+- [Unit Testing in a Spring Boot Project Using Mockito and JUnit](https://www.geeksforgeeks.org/advance-java/unit-testing-in-spring-boot-project-using-mockito-and-junit/)
+- [Guide to Unit Testing Spring Boot REST APIs](https://stackabuse.com/guide-to-unit-testing-spring-boot-rest-apis/)
 
 The included `LICENSE.txt` preserves the Spring guide starter's Apache 2.0 license.
